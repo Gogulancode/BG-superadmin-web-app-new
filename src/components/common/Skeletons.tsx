@@ -1,14 +1,6 @@
 "use client";
 
 import { Skeleton } from "@/components/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/table";
 import { Card, CardContent, CardHeader } from "@/components/card";
 import { cn } from "@/lib/utils";
 

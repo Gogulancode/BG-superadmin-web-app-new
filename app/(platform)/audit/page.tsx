@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -221,13 +220,10 @@ const EVENT_TYPES: { value: AuditEventType | 'ALL'; label: string }[] = [
   { value: 'TENANT_UPDATED', label: 'Tenant Updated' },
   { value: 'TENANT_ACTIVATED', label: 'Tenant Activated' },
   { value: 'TENANT_DEACTIVATED', label: 'Tenant Deactivated' },
-  { value: 'TEMPLATE_CREATED', label: 'Template Created' },
-  { value: 'TEMPLATE_UPDATED', label: 'Template Updated' },
-  { value: 'TEMPLATE_DELETED', label: 'Template Deleted' },
+  { value: 'TENANT_SUBSCRIPTION_UPDATED', label: 'Subscription Updated' },
   { value: 'SUPPORT_TICKET_CREATED', label: 'Ticket Created' },
-  { value: 'SUPPORT_TICKET_UPDATED', label: 'Ticket Updated' },
-  { value: 'USER_LOGIN', label: 'User Login' },
-  { value: 'USER_LOGOUT', label: 'User Logout' },
+  { value: 'SUPPORT_TICKET_STATUS_CHANGED', label: 'Ticket Status Changed' },
+  { value: 'SUPERADMIN_LOGIN', label: 'Superadmin Login' },
   { value: 'SETTINGS_CHANGED', label: 'Settings Changed' },
 ];
 

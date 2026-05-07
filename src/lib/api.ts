@@ -280,8 +280,8 @@ export interface TemplateListParams {
 }
 
 // Support
-export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED";
+export type TicketPriority = "LOW" | "MEDIUM" | "HIGH";
 
 export interface SupportTicket {
   id: string;
@@ -334,17 +334,14 @@ export interface SupportTicketListParams {
 
 // Audit
 export type AuditEventType =
+  | "SUPERADMIN_LOGIN"
   | "TENANT_CREATED"
   | "TENANT_UPDATED"
   | "TENANT_ACTIVATED"
   | "TENANT_DEACTIVATED"
-  | "TEMPLATE_CREATED"
-  | "TEMPLATE_UPDATED"
-  | "TEMPLATE_DELETED"
+  | "TENANT_SUBSCRIPTION_UPDATED"
   | "SUPPORT_TICKET_CREATED"
-  | "SUPPORT_TICKET_UPDATED"
-  | "USER_LOGIN"
-  | "USER_LOGOUT"
+  | "SUPPORT_TICKET_STATUS_CHANGED"
   | "SETTINGS_CHANGED";
 
 export interface AuditLogEntry {
@@ -831,7 +828,19 @@ export async function updateSupportTicketStatus(
 
 export async function getAuditLogs(params: AuditLogQuery = {}): Promise<AuditLogResponse> {
   const qs = buildQueryString(params);
-  return api<AuditLogResponse>(`/api/v1/superadmin/audit/logs${qs}`);
+  const response = await api<AuditLogResponse | ApiPaginatedResponse<AuditLogEntry>>(`/api/v1/superadmin/audit${qs}`);
+  if ("meta" in response) {
+    return {
+      data: response.data.map((entry) => ({
+        ...entry,
+        tenantName: entry.tenantName ?? (entry as AuditLogEntry & { tenant?: { name?: string } }).tenant?.name,
+      })),
+      total: response.meta.total,
+      page: response.meta.page,
+      pageSize: response.meta.pageSize,
+    };
+  }
+  return response;
 }
 
 // ============================================================================

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/card';
-import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
@@ -53,7 +52,7 @@ export default function SubscriptionsPage() {
         description: `${selectedSubscription.name} has been updated to ${newPlan} plan.`,
       });
       setChangePlanDialogOpen(false);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update subscription plan.',

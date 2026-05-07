@@ -61,7 +61,6 @@ import {
   RefreshCw,
   Clock,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
   Plus,
   Eye,
@@ -264,7 +263,6 @@ function TicketDetailSheet({
                       <SelectItem value="OPEN">Open</SelectItem>
                       <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                       <SelectItem value="RESOLVED">Resolved</SelectItem>
-                      <SelectItem value="CLOSED">Closed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -445,7 +443,6 @@ function CreateTicketDialog({
                   <SelectItem value="LOW">Low</SelectItem>
                   <SelectItem value="MEDIUM">Medium</SelectItem>
                   <SelectItem value="HIGH">High</SelectItem>
-                  <SelectItem value="URGENT">Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -518,7 +515,7 @@ export default function SupportPage() {
   const openCount = tickets.filter((t) => t.status === 'OPEN').length;
   const inProgressCount = tickets.filter((t) => t.status === 'IN_PROGRESS').length;
   const highPriorityCount = tickets.filter(
-    (t) => t.priority === 'URGENT' || t.priority === 'HIGH'
+    (t) => t.priority === 'HIGH'
   ).length;
   const resolvedCount = tickets.filter((t) => t.status === 'RESOLVED').length;
 
@@ -569,7 +566,6 @@ export default function SupportPage() {
                   { label: 'Open', value: 'OPEN' },
                   { label: 'In Progress', value: 'IN_PROGRESS' },
                   { label: 'Resolved', value: 'RESOLVED' },
-                  { label: 'Closed', value: 'CLOSED' },
                 ],
               },
               {
@@ -579,7 +575,6 @@ export default function SupportPage() {
                   { label: 'Low', value: 'LOW' },
                   { label: 'Medium', value: 'MEDIUM' },
                   { label: 'High', value: 'HIGH' },
-                  { label: 'Urgent', value: 'URGENT' },
                 ],
               },
             ]}

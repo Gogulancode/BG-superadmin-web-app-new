@@ -34,10 +34,6 @@ import type { MetricsChartData, OutcomesChartData } from '@/components/reports';
 // Import shared components
 import {
   PageHeader,
-  KpiCard,
-  StatCard,
-  ChartSkeleton,
-  StatsSkeleton,
 } from '@/components/common';
 
 // Lazy load chart components - Recharts bundle stays in these chunks

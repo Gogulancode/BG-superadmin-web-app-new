@@ -72,7 +72,6 @@ import {
   RefreshCw,
   Trash2,
   Copy,
-  Users,
 } from 'lucide-react';
 
 // Import shared components

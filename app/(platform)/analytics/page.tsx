@@ -26,12 +26,6 @@ export default function AnalyticsPage() {
     queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
-  const getFlagColor = (flag: string) => {
-    if (flag === 'Green' || flag === 'healthy') return 'bg-green-100 text-green-800';
-    if (flag === 'Yellow' || flag === 'atRisk') return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">

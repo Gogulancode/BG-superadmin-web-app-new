@@ -1,7 +1,7 @@
 "use client";
 
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
+import { Card, CardContent } from "@/components/card";
 import { cn } from "@/lib/utils";
 
 interface KpiCardProps {
