@@ -1,6 +1,6 @@
 import { clearAuthTokens, redirectToLogin } from "./auth";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").trim().replace(/\/$/, "");
 
 // ============================================================================
 // Types & Interfaces
@@ -495,10 +495,6 @@ export async function refreshToken(): Promise<boolean> {
 export async function api<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   if (typeof window === "undefined") {
     throw new Error("api() must be called from the browser");
-  }
-
-  if (!API_URL) {
-    throw new Error("NEXT_PUBLIC_API_URL is not configured");
   }
 
   const accessToken = localStorage.getItem("superadmin_access_token");
