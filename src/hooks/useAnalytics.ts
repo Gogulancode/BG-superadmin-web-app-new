@@ -31,7 +31,7 @@ export interface HealthDistribution {
 export interface TopPerformer {
   tenantId: string;
   tenantName: string;
-  activityCount: number;
+  activityScore: number;
 }
 
 export function usePlatformStats() {
@@ -88,9 +88,9 @@ export function useTopPerformers() {
     queryFn: async () => {
       const summary = await getDashboardSummary();
       return (summary.topTenantsByActivity || []).map((item) => ({
-        tenantId: item.tenantName, // API returns name, not ID in this field
+        tenantId: item.tenantId,
         tenantName: item.tenantName,
-        activityCount: item.activityCount,
+        activityScore: item.activityScore,
       }));
     },
     staleTime: 120000,

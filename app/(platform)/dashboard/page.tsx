@@ -79,28 +79,8 @@ export default function PlatformDashboard() {
     );
   }
 
-  // Mock growth data if not available from API
-  const tenantGrowthData = summary?.tenantGrowthSeries?.length
-    ? summary.tenantGrowthSeries
-    : [
-        { date: 'Jan', count: 12 },
-        { date: 'Feb', count: 18 },
-        { date: 'Mar', count: 25 },
-        { date: 'Apr', count: 32 },
-        { date: 'May', count: 45 },
-        { date: 'Jun', count: summary?.totalTenants || 52 },
-      ];
-
-  // Mock top tenants if not available from API
-  const topTenantsData = summary?.topTenantsByActivity?.length
-    ? summary.topTenantsByActivity
-    : [
-        { tenantName: 'Acme Corp', activityScore: 95 },
-        { tenantName: 'TechStart Inc', activityScore: 87 },
-        { tenantName: 'Growth Labs', activityScore: 76 },
-        { tenantName: 'Summit Co', activityScore: 68 },
-        { tenantName: 'Vista Digital', activityScore: 54 },
-      ];
+  const tenantGrowthData = summary?.tenantGrowthSeries ?? [];
+  const topTenantsData = summary?.topTenantsByActivity ?? [];
 
   return (
     <div className="space-y-6">
@@ -230,7 +210,7 @@ export default function PlatformDashboard() {
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
-                    domain={[0, 100]}
+                    domain={[0, 'dataMax']}
                   />
                   <YAxis
                     type="category"

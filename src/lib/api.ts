@@ -85,13 +85,15 @@ export interface ActivityTrendPoint {
 }
 
 export interface TenantGrowthPoint {
+  date: string;
   month: string;
   count: number;
 }
 
 export interface TopTenantActivity {
+  tenantId: string;
   tenantName: string;
-  activityCount: number;
+  activityScore: number;
 }
 
 export interface DashboardSummary {
@@ -1039,9 +1041,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
 export async function getTenantGrowthData(): Promise<TenantGrowth[]> {
   const summary = await getDashboardSummary();
   return (summary.tenantGrowthSeries || []).map((item, idx, arr) => ({
-    month: item.month,
+    month: item.month || item.date,
     count: item.count,
-    growth: idx > 0 ? ((item.count - arr[idx - 1].count) / arr[idx - 1].count) * 100 : 0,
+    growth: idx > 0 && arr[idx - 1].count > 0 ? ((item.count - arr[idx - 1].count) / arr[idx - 1].count) * 100 : 0,
   }));
 }
 

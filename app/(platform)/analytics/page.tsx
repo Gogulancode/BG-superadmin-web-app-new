@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
                     <span className="text-lg font-bold text-gray-400 w-6">{idx + 1}</span>
                     <div>
                       <p className="font-medium">{tenant.tenantName}</p>
-                      <p className="text-xs text-gray-500">Activity Score: {tenant.activityCount}</p>
+                      <p className="text-xs text-gray-500">Activity Score: {tenant.activityScore}</p>
                     </div>
                   </div>
                   <Badge className="bg-blue-100 text-blue-800">
