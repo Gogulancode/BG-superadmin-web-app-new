@@ -1070,9 +1070,20 @@ export interface UserListParams {
   search?: string;
 }
 
+export interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  adminUsers: number;
+  newThisWeek: number;
+}
+
 export async function getCrossTenantUsers(params: UserListParams = {}): Promise<PaginatedResponse<CrossTenantUser>> {
   const qs = buildQueryString(params);
   return api<PaginatedResponse<CrossTenantUser>>(`/api/v1/superadmin/users${qs}`);
+}
+
+export async function getCrossTenantUserStats(): Promise<UserStats> {
+  return api<UserStats>("/api/v1/superadmin/users/stats");
 }
 
 // ============================================================================

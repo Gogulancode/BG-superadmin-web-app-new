@@ -1,43 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldCheck, User, Settings2 } from "lucide-react";
-
-const sections = [
-  {
-    title: "Profile",
-    description: "Future integration with /super-admin/profile endpoint",
-    fields: [
-      { label: "Name", value: "Super Admin" },
-      { label: "Email", value: "superadmin@bridgegaps.app" },
-    ],
-  },
-  {
-    title: "Platform Preferences",
-    description: "Coming soon: theme + notification toggles",
-    fields: [
-      { label: "Default Theme", value: "Light" },
-      { label: "Digest Emails", value: "Weekly" },
-    ],
-  },
-];
+import { ShieldCheck, Settings2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
+import { Label } from "@/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
+import { Switch } from "@/components/switch";
+import { usePlatformSettings, useUpdatePlatformSettings } from "@/hooks";
+import type { SubscriptionPlan } from "@/lib/api";
 
 export default function SettingsPage() {
+  const { data: settings, isLoading, isRefetching, refetch } = usePlatformSettings();
+  const updateSettings = useUpdatePlatformSettings();
+
   return (
     <div className="space-y-6">
-      <section>
-        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and platform settings.</p>
+      <section className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+          <p className="text-muted-foreground">Manage security and platform-wide defaults.</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} disabled={isRefetching}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </section>
 
-      {/* Quick Links */}
       <div className="grid gap-4 md:grid-cols-3">
         <Link
           href="/settings/security"
-          className="group rounded-xl border border-border bg-card p-5 shadow-soft transition-colors hover:border-primary/50 hover:bg-accent"
+          className="group rounded-lg border border-border bg-card p-5 shadow-soft transition-colors hover:border-primary/50 hover:bg-accent"
         >
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20">
+            <div className="rounded-md bg-primary/10 p-2 group-hover:bg-primary/20">
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -47,56 +43,140 @@ export default function SettingsPage() {
           </div>
         </Link>
 
-        <div className="rounded-xl border border-border bg-card p-5 opacity-50 shadow-soft">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-muted p-2">
-              <User className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-md bg-primary/10 p-2">
+              <Settings2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Profile</h3>
-              <p className="text-sm text-muted-foreground">Coming soon</p>
+              <h3 className="font-semibold text-foreground">Default Plan</h3>
+              <p className="text-sm text-muted-foreground">{settings?.defaultPlan || "Loading"}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5 opacity-50 shadow-soft">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-muted p-2">
-              <Settings2 className="h-5 w-5 text-muted-foreground" />
+            <div className="rounded-md bg-primary/10 p-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Preferences</h3>
-              <p className="text-sm text-muted-foreground">Coming soon</p>
+              <h3 className="font-semibold text-foreground">Maintenance</h3>
+              <p className="text-sm text-muted-foreground">{settings?.maintenanceMode ? "Enabled" : "Disabled"}</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {sections.map((section) => (
-          <div key={section.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="text-lg font-semibold text-foreground">{section.title}</h2>
-            <p className="text-sm text-muted-foreground">{section.description}</p>
-            <dl className="mt-4 space-y-3 text-sm">
-              {section.fields.map((field) => (
-                <div key={field.label} className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">{field.label}</dt>
-                  <dd className="font-medium text-foreground">{field.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        ))}
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform Defaults</CardTitle>
+            <CardDescription>Defaults applied to new tenant provisioning flows.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label>Default Plan</Label>
+              <Select
+                value={settings?.defaultPlan}
+                disabled={!settings || isLoading || updateSettings.isPending}
+                onValueChange={(defaultPlan) => updateSettings.mutate({ defaultPlan: defaultPlan as SubscriptionPlan })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select default plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FREE">Free</SelectItem>
+                  <SelectItem value="STARTER">Starter</SelectItem>
+                  <SelectItem value="PRO">Pro</SelectItem>
+                  <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <SettingToggle
+              label="Maintenance Mode"
+              description="Temporarily pause tenant-facing access during production maintenance."
+              checked={settings?.maintenanceMode ?? false}
+              disabled={!settings || updateSettings.isPending}
+              onCheckedChange={(maintenanceMode) => updateSettings.mutate({ maintenanceMode })}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Feature Flags</CardTitle>
+            <CardDescription>Platform-wide capability switches for Superadmin operations.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <SettingToggle
+              label="MFA"
+              description="Require and manage multi-factor authentication controls."
+              checked={settings?.features.mfaEnabled ?? false}
+              disabled={!settings || updateSettings.isPending}
+              onCheckedChange={(mfaEnabled) => updateSettings.mutate({ features: { mfaEnabled } })}
+            />
+            <SettingToggle
+              label="Audit Logging"
+              description="Record critical Superadmin and tenant lifecycle events."
+              checked={settings?.features.auditLogging ?? false}
+              disabled={!settings || updateSettings.isPending}
+              onCheckedChange={(auditLogging) => updateSettings.mutate({ features: { auditLogging } })}
+            />
+            <SettingToggle
+              label="Email Notifications"
+              description="Send operational notifications for tenant and support events."
+              checked={settings?.features.emailNotifications ?? false}
+              disabled={!settings || updateSettings.isPending}
+              onCheckedChange={(emailNotifications) => updateSettings.mutate({ features: { emailNotifications } })}
+            />
+          </CardContent>
+        </Card>
       </div>
 
-      <section className="rounded-xl border border-dashed border-border/70 bg-muted/30 p-6">
-        <h2 className="text-lg font-semibold text-foreground">Next steps</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>Connect to real API mutations + optimistic UI.</li>
-          <li>Lock down access via RBAC guard once auth is wired.</li>
-          <li>Add audit trail hooks for critical setting updates.</li>
-        </ul>
-      </section>
+      {settings && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Plan Limits</CardTitle>
+            <CardDescription>Current tenant capacity defaults per subscription plan.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {Object.entries(settings.maxTenantsPerPlan).map(([plan, limit]) => (
+                <div key={plan} className="rounded-lg border border-border p-4">
+                  <p className="text-sm text-muted-foreground">{plan}</p>
+                  <p className="mt-1 text-2xl font-semibold text-foreground">{limit}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function SettingToggle({
+  label,
+  description,
+  checked,
+  disabled,
+  onCheckedChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+      <div>
+        <Label className="font-medium">{label}</Label>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <Switch checked={checked} disabled={disabled} onCheckedChange={onCheckedChange} />
     </div>
   );
 }
