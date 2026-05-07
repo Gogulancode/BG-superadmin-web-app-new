@@ -20,8 +20,13 @@ const getPageTitle = (pathname: string) => {
     "/templates": "Templates",
     "/support": "Support",
     "/subscriptions": "Subscriptions",
+    "/users": "Users",
+    "/reports": "Reports",
+    "/analytics": "Analytics",
     "/audit": "Audit Log",
+    "/ops": "System Operations",
     "/settings": "Settings",
+    "/settings/security": "Security",
   };
   return titles[pathname] || "Dashboard";
 };

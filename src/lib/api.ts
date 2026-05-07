@@ -27,6 +27,14 @@ export interface AuthResponse {
   user: SuperadminUser;
 }
 
+interface ApiAuthResponse {
+  accessToken?: string;
+  refreshToken?: string;
+  access_token?: string;
+  refresh_token?: string;
+  user: SuperadminUser;
+}
+
 // MFA Types
 export interface MfaRequiredResponse {
   requiresMfa: true;
@@ -77,6 +85,14 @@ export interface SessionListResponse {
 }
 
 export type LoginResponse = AuthResponse | MfaRequiredResponse;
+
+function normalizeAuthResponse(data: ApiAuthResponse): AuthResponse {
+  return {
+    accessToken: data.accessToken ?? data.access_token ?? "",
+    refreshToken: data.refreshToken ?? data.refresh_token ?? "",
+    user: data.user,
+  };
+}
 
 // Dashboard
 export interface ActivityTrendPoint {
@@ -449,14 +465,17 @@ export async function refreshToken(): Promise<boolean> {
     }
 
     const data = await res.json();
-    if (!data.accessToken || !data.refreshToken) {
+    const accessToken = data.accessToken ?? data.access_token;
+    if (!accessToken) {
       clearAuthTokens();
       redirectToLogin();
       return false;
     }
 
-    localStorage.setItem("superadmin_access_token", data.accessToken);
-    localStorage.setItem("superadmin_refresh_token", data.refreshToken);
+    localStorage.setItem("superadmin_access_token", accessToken);
+    if (data.refreshToken || data.refresh_token) {
+      localStorage.setItem("superadmin_refresh_token", data.refreshToken ?? data.refresh_token);
+    }
     return true;
   } catch (error) {
     console.error("Token refresh failed", error);
@@ -642,20 +661,25 @@ export async function loginSuperadmin(credentials: LoginCredentials): Promise<Lo
     throw new Error(errorData.message || "Login failed");
   }
 
-  const data: LoginResponse = await res.json();
+  const rawData: ApiAuthResponse | MfaRequiredResponse = await res.json();
 
   // Only store tokens if MFA is not required
-  if (!isMfaRequired(data)) {
+  if (!isMfaRequired(rawData)) {
+    const data = normalizeAuthResponse(rawData);
+    if (!data.accessToken || !data.refreshToken) {
+      throw new Error("Login response did not include auth tokens");
+    }
     localStorage.setItem("superadmin_access_token", data.accessToken);
     localStorage.setItem("superadmin_refresh_token", data.refreshToken);
     localStorage.setItem("superadmin_user", JSON.stringify(data.user));
+    return data;
   }
 
-  return data;
+  return rawData;
 }
 
 // Helper to check if login response requires MFA (moved up for use in loginSuperadmin)
-export function isMfaRequired(response: LoginResponse): response is MfaRequiredResponse {
+export function isMfaRequired(response: LoginResponse | ApiAuthResponse | MfaRequiredResponse): response is MfaRequiredResponse {
   return "requiresMfa" in response && response.requiresMfa === true;
 }
 
@@ -895,7 +919,10 @@ export async function mfaLogin(payload: MfaLoginPayload): Promise<AuthResponse> 
     throw new Error(errorData.message || "MFA verification failed");
   }
 
-  const data: AuthResponse = await res.json();
+  const data = normalizeAuthResponse(await res.json());
+  if (!data.accessToken || !data.refreshToken) {
+    throw new Error("MFA login response did not include auth tokens");
+  }
 
   // Store tokens
   localStorage.setItem("superadmin_access_token", data.accessToken);

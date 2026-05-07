@@ -9,6 +9,10 @@ import {
   Layers,
   Headphones,
   CreditCard,
+  Users,
+  FileBarChart,
+  ClipboardList,
+  Server,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -21,6 +25,10 @@ const navItems = [
   { icon: Layers, label: "Templates", path: "/templates" },
   { icon: Headphones, label: "Support", path: "/support" },
   { icon: CreditCard, label: "Subscriptions", path: "/subscriptions" },
+  { icon: Users, label: "Users", path: "/users" },
+  { icon: FileBarChart, label: "Reports", path: "/reports" },
+  { icon: ClipboardList, label: "Audit", path: "/audit" },
+  { icon: Server, label: "Ops", path: "/ops" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -54,6 +62,8 @@ const Sidebar = () => {
             <li key={item.path}>
               <NavLink
                 href={item.path}
+                aria-label={item.label}
+                title={item.label}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ${!isOpen && 'justify-center'}`}
                 activeClassName="bg-primary/10 text-primary font-medium hover:bg-primary/15"
               >

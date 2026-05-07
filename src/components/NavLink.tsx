@@ -2,10 +2,10 @@
 
 import Link, { LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
-import { forwardRef, ReactNode } from "react";
+import { AnchorHTMLAttributes, forwardRef, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-interface NavLinkProps extends Omit<LinkProps, "href"> {
+interface NavLinkProps extends Omit<LinkProps, "href">, Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps | "href"> {
   href: string;
   className?: string;
   activeClassName?: string;

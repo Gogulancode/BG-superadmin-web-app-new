@@ -78,7 +78,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>Default Plan</Label>
               <Select
-                value={settings?.defaultPlan}
+                value={settings?.defaultPlan ?? ""}
                 disabled={!settings || isLoading || updateSettings.isPending}
                 onValueChange={(defaultPlan) => updateSettings.mutate({ defaultPlan: defaultPlan as SubscriptionPlan })}
               >

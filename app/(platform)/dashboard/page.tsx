@@ -156,41 +156,47 @@ export default function PlatformDashboard() {
             <CardDescription>Monthly tenant acquisition over time</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={tenantGrowthData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px',
-                    }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    name="Tenants"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    dot={{ fill: 'hsl(var(--primary))' }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {tenantGrowthData.length > 0 ? (
+              <div className="h-[300px] min-h-[300px] w-full min-w-0">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={tenantGrowthData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      name="Tenants"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+                No tenant growth data yet
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -201,42 +207,48 @@ export default function PlatformDashboard() {
             <CardDescription>Most engaged businesses this month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topTenantsData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                    domain={[0, 'dataMax']}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="tenantName"
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                    width={100}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px',
-                    }}
-                    formatter={(value: number) => [`${value}%`, 'Activity Score']}
-                  />
-                  <Bar
-                    dataKey="activityScore"
-                    name="Activity Score"
-                    fill="hsl(var(--primary))"
-                    radius={[0, 4, 4, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {topTenantsData.length > 0 ? (
+              <div className="h-[300px] min-h-[300px] w-full min-w-0">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={topTenantsData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      domain={[0, 'dataMax']}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="tenantName"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={100}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                      formatter={(value: number) => [`${value}%`, 'Activity Score']}
+                    />
+                    <Bar
+                      dataKey="activityScore"
+                      name="Activity Score"
+                      fill="hsl(var(--primary))"
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+                No tenant activity data yet
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
