@@ -4,7 +4,6 @@ import {
   createTenant,
   getTenantById,
   updateTenant,
-  deleteTenant,
   activateTenant,
   deactivateTenant,
   updateTenantSubscription,
@@ -33,7 +32,7 @@ export function useTenants(params: TenantListParams & { limit?: number } = {}) {
     ...params,
     pageSize: params.limit || params.pageSize,
   };
-  return useQuery<PaginatedResponse<Tenant> | Tenant[], Error>({
+  return useQuery<PaginatedResponse<Tenant>, Error>({
     queryKey: tenantKeys.list(normalizedParams),
     queryFn: () => getTenants(normalizedParams),
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -42,7 +41,7 @@ export function useTenants(params: TenantListParams & { limit?: number } = {}) {
 
 // List tenants
 export function useTenantList(params: TenantListParams = {}) {
-  return useQuery<PaginatedResponse<Tenant> | Tenant[], Error>({
+  return useQuery<PaginatedResponse<Tenant>, Error>({
     queryKey: tenantKeys.list(params),
     queryFn: () => getTenants(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -135,14 +134,3 @@ export function useUpdateTenant() {
   });
 }
 
-// Delete tenant
-export function useDeleteTenant() {
-  const queryClient = useQueryClient();
-
-  return useMutation<void, Error, string>({
-    mutationFn: deleteTenant,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
-    },
-  });
-}

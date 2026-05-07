@@ -109,8 +109,9 @@ export interface DashboardSummary {
 }
 
 // Tenants
-export type TenantStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
-export type SubscriptionPlan = "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
+export type TenantStatus = "ACTIVE" | "INACTIVE";
+export type SubscriptionStatus = "TRIAL" | "ACTIVE" | "PAST_DUE" | "CANCELED";
+export type SubscriptionPlan = "FREE" | "STARTER" | "PRO" | "ENTERPRISE";
 
 export interface Tenant {
   id: string;
@@ -119,6 +120,10 @@ export interface Tenant {
   domain?: string;
   status: TenantStatus;
   plan: SubscriptionPlan;
+  planCode?: string | null;
+  subscriptionStatus: SubscriptionStatus;
+  renewalDate?: string | null;
+  trialEndsAt?: string | null;
   createdAt: string;
   updatedAt: string;
   lastActiveAt?: string;
@@ -162,8 +167,11 @@ export interface UpdateTenantPayload {
 
 export interface TenantSubscriptionUpdatePayload {
   plan?: SubscriptionPlan;
+  subscriptionStatus?: SubscriptionStatus;
   billingCycle?: "MONTHLY" | "ANNUAL";
   expiresAt?: string;
+  renewalDate?: string | null;
+  trialEndsAt?: string | null;
 }
 
 export type OnboardingFilter = "ALL" | "COMPLETED" | "NOT_COMPLETED";
@@ -185,6 +193,32 @@ export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+interface ApiTenant {
+  id: string;
+  name: string;
+  email: string;
+  status: TenantStatus;
+  subscriptionStatus: SubscriptionStatus;
+  planCode?: string | null;
+  renewalDate?: string | null;
+  trialEndsAt?: string | null;
+  isOnboarded: boolean;
+  onboardedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastActiveAt?: string | null;
+}
+
+interface ApiPaginatedResponse<T> {
+  data: T[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // Templates
@@ -527,6 +561,72 @@ function buildQueryString(params: object): string {
   return qs ? `?${qs}` : "";
 }
 
+function normalizePlan(value?: string | null): SubscriptionPlan {
+  if (value === "STARTER" || value === "PRO" || value === "ENTERPRISE") {
+    return value;
+  }
+  if (value === "PROFESSIONAL") {
+    return "PRO";
+  }
+  return "FREE";
+}
+
+function normalizeTenant(raw: ApiTenant): Tenant {
+  return {
+    id: raw.id,
+    name: raw.name,
+    email: raw.email,
+    status: raw.status,
+    plan: normalizePlan(raw.planCode),
+    planCode: raw.planCode ?? null,
+    subscriptionStatus: raw.subscriptionStatus,
+    renewalDate: raw.renewalDate ?? null,
+    trialEndsAt: raw.trialEndsAt ?? null,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+    lastActiveAt: raw.lastActiveAt ?? undefined,
+    isOnboarded: raw.isOnboarded,
+    onboardingStep: raw.isOnboarded ? 8 : 1,
+    onboardingCompletedAt: raw.onboardedAt ?? null,
+  };
+}
+
+function normalizeTenantPage(response: ApiPaginatedResponse<ApiTenant>): PaginatedResponse<Tenant> {
+  return {
+    data: response.data.map(normalizeTenant),
+    total: response.meta.total,
+    page: response.meta.page,
+    pageSize: response.meta.pageSize,
+    totalPages: response.meta.totalPages,
+  };
+}
+
+function toTenantQueryParams(params: TenantListParams) {
+  return {
+    page: params.page,
+    pageSize: params.pageSize,
+    status: params.status,
+    planCode: params.plan,
+    search: params.search,
+    isOnboarded:
+      params.onboarding === "COMPLETED"
+        ? true
+        : params.onboarding === "NOT_COMPLETED"
+          ? false
+          : undefined,
+  };
+}
+
+function toSubscriptionPayload(payload: TenantSubscriptionUpdatePayload) {
+  return {
+    subscriptionStatus:
+      payload.subscriptionStatus ?? (payload.plan && payload.plan !== "FREE" ? "ACTIVE" : undefined),
+    planCode: payload.plan,
+    renewalDate: payload.renewalDate ?? payload.expiresAt,
+    trialEndsAt: payload.trialEndsAt,
+  };
+}
+
 // ============================================================================
 // Auth API
 // ============================================================================
@@ -588,75 +688,74 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 // Tenants API
 // ============================================================================
 
-export async function getTenants(params: TenantListParams = {}): Promise<PaginatedResponse<Tenant> | Tenant[]> {
-  const qs = buildQueryString(params);
-  return api<PaginatedResponse<Tenant> | Tenant[]>(`/api/v1/superadmin/tenants${qs}`);
+export async function getTenants(params: TenantListParams = {}): Promise<PaginatedResponse<Tenant>> {
+  const qs = buildQueryString(toTenantQueryParams(params));
+  const response = await api<ApiPaginatedResponse<ApiTenant>>(`/api/v1/superadmin/tenants${qs}`);
+  return normalizeTenantPage(response);
 }
 
 export async function createTenant(payload: CreateTenantPayload): Promise<Tenant> {
-  return api<Tenant>("/api/v1/superadmin/tenants", {
+  const created = await api<ApiTenant>("/api/v1/superadmin/tenants", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      name: payload.name,
+      email: payload.email,
+    }),
   });
+  const tenant = normalizeTenant(created);
+  if (payload.plan && payload.plan !== tenant.plan) {
+    return updateTenantSubscription(tenant.id, { plan: payload.plan });
+  }
+  return tenant;
 }
 
 export async function getTenantById(id: string): Promise<Tenant> {
-  return api<Tenant>(`/api/v1/superadmin/tenants/${id}`);
+  const tenant = await api<ApiTenant>(`/api/v1/superadmin/tenants/${id}`);
+  return normalizeTenant(tenant);
 }
 
 export async function updateTenant(id: string, payload: UpdateTenantPayload): Promise<Tenant> {
-  return api<Tenant>(`/api/v1/superadmin/tenants/${id}`, {
+  const updated = await api<ApiTenant>(`/api/v1/superadmin/tenants/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      name: payload.name,
+      email: payload.email,
+    }),
   });
-}
-
-export async function deleteTenant(id: string): Promise<void> {
-  return api<void>(`/api/v1/superadmin/tenants/${id}`, {
-    method: "DELETE",
-  });
+  const tenant = normalizeTenant(updated);
+  if (payload.plan && payload.plan !== tenant.plan) {
+    return updateTenantSubscription(tenant.id, { plan: payload.plan });
+  }
+  return tenant;
 }
 
 export async function activateTenant(id: string): Promise<Tenant> {
-  return api<Tenant>(`/api/v1/superadmin/tenants/${id}/activate`, {
+  const tenant = await api<ApiTenant>(`/api/v1/superadmin/tenants/${id}/activate`, {
     method: "PATCH",
   });
+  return normalizeTenant(tenant);
 }
 
 export async function deactivateTenant(id: string): Promise<Tenant> {
-  return api<Tenant>(`/api/v1/superadmin/tenants/${id}/deactivate`, {
+  const tenant = await api<ApiTenant>(`/api/v1/superadmin/tenants/${id}/deactivate`, {
     method: "PATCH",
   });
+  return normalizeTenant(tenant);
 }
 
 export async function updateTenantSubscription(
   id: string,
   payload: TenantSubscriptionUpdatePayload
 ): Promise<Tenant> {
-  return api<Tenant>(`/api/v1/superadmin/tenants/${id}/subscription`, {
+  const tenant = await api<ApiTenant>(`/api/v1/superadmin/tenants/${id}/subscription`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(toSubscriptionPayload(payload)),
   });
+  return normalizeTenant(tenant);
 }
 
 export async function getTenantStats(id: string): Promise<TenantStats> {
   return api<TenantStats>(`/api/v1/superadmin/tenants/${id}/stats`);
-}
-
-export interface ResetPasswordResponse {
-  tenantId: string;
-  tenantName: string;
-  adminCredentials: {
-    email: string;
-    tempPassword: string;
-    loginUrl: string;
-  };
-}
-
-export async function resetTenantPassword(id: string): Promise<ResetPasswordResponse> {
-  return api<ResetPasswordResponse>(`/api/v1/superadmin/tenants/${id}/reset-password`, {
-    method: "POST",
-  });
 }
 
 // ============================================================================

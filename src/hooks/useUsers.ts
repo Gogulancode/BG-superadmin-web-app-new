@@ -1,9 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  getTenants,
-  Tenant,
-  PaginatedResponse,
-} from "@/lib/api";
+import { getTenants } from "@/lib/api";
 
 export const usersKeys = {
   all: ["users"] as const,
@@ -48,9 +44,7 @@ export function useUserList(params: UserListParams = {}) {
       // For now, return mock data until backend endpoint is available
       // This would be replaced with: api<PaginatedResponse<CrossTenantUser>>(`/api/v1/superadmin/users${qs}`)
       const tenantsResponse = await getTenants({ pageSize: 100 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       // Generate mock users from tenants
       const users: CrossTenantUser[] = tenants.flatMap((tenant) => [
@@ -109,9 +103,7 @@ export function useUserStats() {
     queryKey: usersKeys.stats(),
     queryFn: async () => {
       const tenantsResponse = await getTenants({ pageSize: 1000 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       const now = new Date();
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);

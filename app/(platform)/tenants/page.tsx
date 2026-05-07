@@ -5,7 +5,6 @@ import {
   useTenants,
   useCreateTenant,
   useUpdateTenant,
-  useDeleteTenant,
   useTenant,
   useTenantStats,
   useActivateTenant,
@@ -17,7 +16,6 @@ import {
   TenantStatus,
   SubscriptionPlan,
   OnboardingFilter,
-  resetTenantPassword,
 } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,8 +80,6 @@ import {
   Pencil,
   Plus,
   RefreshCw,
-  Search,
-  Trash2,
   Eye,
   Power,
   PowerOff,
@@ -97,8 +93,6 @@ import {
   Flame,
   BarChart3,
   CheckCircle2,
-  Clock,
-  Circle,
   Copy,
   Key,
   ExternalLink,
@@ -114,7 +108,6 @@ import {
   EmptyState,
   StatCard,
   FilterBar,
-  type FilterConfig,
 } from '@/components/common';
 
 // ============================================================================
@@ -372,7 +365,7 @@ function TenantFormDialog({
                 <SelectContent>
                   <SelectItem value="FREE">Free</SelectItem>
                   <SelectItem value="STARTER">Starter</SelectItem>
-                  <SelectItem value="PROFESSIONAL">Professional</SelectItem>
+                  <SelectItem value="PRO">Pro</SelectItem>
                   <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
                 </SelectContent>
               </Select>
@@ -473,57 +466,6 @@ function StatusChangeDialog({
               <>
                 <PowerOff className="h-4 w-4 mr-2" />
                 Deactivate
-              </>
-            )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-// ============================================================================
-// Delete Confirmation Dialog
-// ============================================================================
-function DeleteConfirmDialog({
-  open,
-  onOpenChange,
-  tenant,
-  onConfirm,
-  isLoading,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  tenant?: Tenant;
-  onConfirm: () => void;
-  isLoading: boolean;
-}) {
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-destructive">Delete Tenant</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete <strong>{tenant?.name}</strong>? This action cannot be
-            undone and all associated data will be permanently removed.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="bg-destructive hover:bg-destructive/90"
-          >
-            {isLoading ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Tenant
               </>
             )}
           </AlertDialogAction>
@@ -700,7 +642,6 @@ export default function TenantsPage() {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTenant, setEditTenant] = useState<Tenant | null>(null);
-  const [deleteTenant, setDeleteTenant] = useState<Tenant | null>(null);
   const [viewTenantId, setViewTenantId] = useState<string | null>(null);
   const [statusChangeTenant, setStatusChangeTenant] = useState<Tenant | null>(null);
   const [statusChangeAction, setStatusChangeAction] = useState<'activate' | 'deactivate'>('activate');
@@ -709,7 +650,6 @@ export default function TenantsPage() {
   const [credentialsDialogOpen, setCredentialsDialogOpen] = useState(false);
   const [newTenantName, setNewTenantName] = useState('');
   const [newTenantCredentials, setNewTenantCredentials] = useState<AdminCredentials | null>(null);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Queries
   const {
@@ -730,7 +670,6 @@ export default function TenantsPage() {
   // Mutations
   const createMutation = useCreateTenant();
   const updateMutation = useUpdateTenant();
-  const deleteMutation = useDeleteTenant();
   const activateMutation = useActivateTenant();
   const deactivateMutation = useDeactivateTenant();
 
@@ -740,8 +679,7 @@ export default function TenantsPage() {
       const result = await createMutation.mutateAsync(data);
       setCreateDialogOpen(false);
       
-      // Show credentials dialog if available (for demo)
-      const credentials = (result as any).adminCredentials;
+      const credentials = (result as Tenant & { adminCredentials?: AdminCredentials }).adminCredentials;
       if (credentials) {
         setNewTenantName(data.name);
         setNewTenantCredentials(credentials);
@@ -779,25 +717,6 @@ export default function TenantsPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteTenant) return;
-    try {
-      await deleteMutation.mutateAsync(deleteTenant.id);
-      const tenantName = deleteTenant.name;
-      setDeleteTenant(null);
-      toast({
-        title: 'Tenant Deleted',
-        description: `${tenantName} has been permanently deleted.`,
-      });
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: (err as Error).message || 'Failed to delete tenant.',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleStatusChange = async () => {
     if (!statusChangeTenant) return;
     try {
@@ -824,24 +743,6 @@ export default function TenantsPage() {
     }
   };
 
-  const handleResetPassword = async (tenant: Tenant) => {
-    setIsResettingPassword(true);
-    try {
-      const result = await resetTenantPassword(tenant.id);
-      setNewTenantName(tenant.name);
-      setNewTenantCredentials(result.adminCredentials);
-      setCredentialsDialogOpen(true);
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: (err as Error).message || 'Failed to reset password.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
   const openStatusChangeDialog = (tenant: Tenant, action: 'activate' | 'deactivate') => {
     setStatusChangeTenant(tenant);
     setStatusChangeAction(action);
@@ -849,9 +750,7 @@ export default function TenantsPage() {
 
   // Handle both array and paginated response from API
   const tenantsResponse = tenantsData;
-  let tenants = Array.isArray(tenantsResponse)
-    ? tenantsResponse
-    : tenantsResponse?.data || [];
+  let tenants = tenantsResponse?.data || [];
 
   // Client-side onboarding filter (fallback if API doesn't support it)
   if (onboardingFilter !== 'ALL') {
@@ -863,12 +762,8 @@ export default function TenantsPage() {
     });
   }
 
-  const total = Array.isArray(tenantsResponse)
-    ? tenants.length
-    : tenantsResponse?.total || 0;
-  const totalPages = Array.isArray(tenantsResponse)
-    ? 1
-    : tenantsResponse?.totalPages || Math.ceil(total / pageSize);
+  const total = tenantsResponse?.total || 0;
+  const totalPages = tenantsResponse?.totalPages || Math.ceil(total / pageSize);
 
   return (
     <div className="space-y-6">
@@ -902,7 +797,6 @@ export default function TenantsPage() {
                 options: [
                   { label: 'Active', value: 'ACTIVE' },
                   { label: 'Inactive', value: 'INACTIVE' },
-                  { label: 'Suspended', value: 'SUSPENDED' },
                 ],
               },
               {
@@ -911,7 +805,7 @@ export default function TenantsPage() {
                 options: [
                   { label: 'Free', value: 'FREE' },
                   { label: 'Starter', value: 'STARTER' },
-                  { label: 'Professional', value: 'PROFESSIONAL' },
+                  { label: 'Pro', value: 'PRO' },
                   { label: 'Enterprise', value: 'ENTERPRISE' },
                 ],
               },
@@ -1039,13 +933,6 @@ export default function TenantsPage() {
                               <Pencil className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleResetPassword(tenant)}
-                              disabled={isResettingPassword}
-                            >
-                              <Key className="h-4 w-4 mr-2" />
-                              Reset Password
-                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {tenant.status === 'ACTIVE' ? (
                               <DropdownMenuItem
@@ -1064,14 +951,6 @@ export default function TenantsPage() {
                                 Activate
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => setDeleteTenant(tenant)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -1146,15 +1025,6 @@ export default function TenantsPage() {
         action={statusChangeAction}
         onConfirm={handleStatusChange}
         isLoading={activateMutation.isPending || deactivateMutation.isPending}
-      />
-
-      {/* Delete Dialog */}
-      <DeleteConfirmDialog
-        open={!!deleteTenant}
-        onOpenChange={(open) => !open && setDeleteTenant(null)}
-        tenant={deleteTenant || undefined}
-        onConfirm={handleDelete}
-        isLoading={deleteMutation.isPending}
       />
 
       {/* Credentials Dialog - Shows after successful tenant creation */}

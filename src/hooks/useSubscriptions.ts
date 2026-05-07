@@ -3,7 +3,6 @@ import {
   getTenants,
   updateTenantSubscription,
   Tenant,
-  PaginatedResponse,
   TenantSubscriptionUpdatePayload,
   SubscriptionPlan,
 } from "@/lib/api";
@@ -41,9 +40,7 @@ export function useSubscriptionList() {
     queryKey: subscriptionKeys.list(),
     queryFn: async () => {
       const tenantsResponse = await getTenants({ pageSize: 1000 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       return tenants.map((tenant) => ({
         id: tenant.id,
@@ -65,9 +62,7 @@ export function useSubscriptionStats() {
     queryKey: subscriptionKeys.stats(),
     queryFn: async () => {
       const tenantsResponse = await getTenants({ pageSize: 1000 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       const activeTenants = tenants.filter((t) => t.status === "ACTIVE");
       const totalMRR = activeTenants.reduce(
@@ -91,9 +86,7 @@ export function usePlanDistribution() {
     queryKey: subscriptionKeys.planDistribution(),
     queryFn: async () => {
       const tenantsResponse = await getTenants({ pageSize: 1000 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       const counts: Record<SubscriptionPlan, number> = {
         FREE: 0,

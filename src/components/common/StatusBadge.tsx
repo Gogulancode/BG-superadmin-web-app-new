@@ -8,8 +8,6 @@ import {
   Circle,
   XCircle,
   AlertTriangle,
-  Power,
-  PowerOff,
 } from "lucide-react";
 
 // Generic status types
@@ -21,9 +19,6 @@ type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
 // Priority levels
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
-// Onboarding status
-type OnboardingStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
-
 // Template status
 type TemplateStatus = "ACTIVE" | "INACTIVE";
 
@@ -31,7 +26,7 @@ type TemplateStatus = "ACTIVE" | "INACTIVE";
 type TemplateScope = "GLOBAL" | "DEFAULT";
 
 // Subscription plans
-type SubscriptionPlan = "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
+type SubscriptionPlan = "FREE" | "STARTER" | "PRO" | "ENTERPRISE";
 
 interface StatusBadgeProps {
   status: GenericStatus;
@@ -209,7 +204,7 @@ export function PlanBadge({ plan, className }: PlanBadgeProps) {
   const variants: Record<SubscriptionPlan, { className: string }> = {
     FREE: { className: "bg-slate-100 text-slate-800 border-slate-200" },
     STARTER: { className: "bg-blue-100 text-blue-800 border-blue-200" },
-    PROFESSIONAL: { className: "bg-purple-100 text-purple-800 border-purple-200" },
+    PRO: { className: "bg-purple-100 text-purple-800 border-purple-200" },
     ENTERPRISE: { className: "bg-amber-100 text-amber-800 border-amber-200" },
   };
   const { className: badgeClass } = variants[plan] || variants.FREE;

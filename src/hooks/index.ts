@@ -12,7 +12,6 @@ export {
   useTenantStats,
   useCreateTenant,
   useUpdateTenant,
-  useDeleteTenant,
   useActivateTenant,
   useDeactivateTenant,
   useUpdateTenantSubscription,

@@ -2,9 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getDashboardSummary,
   getTenants,
-  DashboardSummary,
-  Tenant,
-  PaginatedResponse,
 } from "@/lib/api";
 
 export const analyticsKeys = {
@@ -72,9 +69,7 @@ export function useHealthDistribution() {
     queryKey: analyticsKeys.healthDistribution(),
     queryFn: async () => {
       const tenantsResponse = await getTenants({ pageSize: 1000 });
-      const tenants = Array.isArray(tenantsResponse)
-        ? tenantsResponse
-        : (tenantsResponse as PaginatedResponse<Tenant>).data;
+      const tenants = tenantsResponse.data;
 
       // Count by status
       const healthy = tenants.filter((t) => t.status === "ACTIVE" && t.onboardingCompletedAt).length;
