@@ -818,15 +818,15 @@ export async function getSupportTickets(
   params: SupportTicketListParams = {}
 ): Promise<PaginatedResponse<SupportTicket> | SupportTicket[]> {
   const qs = buildQueryString(params);
-  return api<PaginatedResponse<SupportTicket> | SupportTicket[]>(`/api/v1/superadmin/support/tickets${qs}`);
+  return api<PaginatedResponse<SupportTicket> | SupportTicket[]>(`/api/v1/superadmin/support${qs}`);
 }
 
 export async function getSupportTicket(id: string): Promise<SupportTicketDetail> {
-  return api<SupportTicketDetail>(`/api/v1/superadmin/support/tickets/${id}`);
+  return api<SupportTicketDetail>(`/api/v1/superadmin/support/${id}`);
 }
 
 export async function createSupportTicket(payload: CreateSupportTicketPayload): Promise<SupportTicket> {
-  return api<SupportTicket>("/api/v1/superadmin/support/tickets", {
+  return api<SupportTicket>("/api/v1/superadmin/support", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -836,7 +836,7 @@ export async function updateSupportTicketStatus(
   id: string,
   payload: UpdateSupportTicketStatusPayload
 ): Promise<SupportTicket> {
-  return api<SupportTicket>(`/api/v1/superadmin/support/tickets/${id}/status`, {
+  return api<SupportTicket>(`/api/v1/superadmin/support/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
