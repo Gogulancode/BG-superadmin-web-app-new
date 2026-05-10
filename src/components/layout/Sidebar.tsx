@@ -49,8 +49,14 @@ const Sidebar = () => {
           />
         ) : (
           <div className="h-12 flex items-center justify-center">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm">
-              BG
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-sm">
+              <Image
+                src="/bridge_gaps_mark.png"
+                alt="BG"
+                width={40}
+                height={40}
+                className="h-full w-full object-contain"
+              />
             </div>
           </div>
         )}
